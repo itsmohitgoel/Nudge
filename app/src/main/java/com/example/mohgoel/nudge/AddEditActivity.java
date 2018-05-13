@@ -47,7 +47,6 @@ public class AddEditActivity extends AppCompatActivity {
     private ReminderItem mReminderItem;
     private boolean isEditMode;
     private ArrayList<ContentValues> imagesList = new ArrayList<>();
-    private CustomChangeListener mListener;
 
     //specify the columns for Images and define respecitive Projections
     private static final String[] IMAGE_COLUMNS = {
@@ -258,11 +257,4 @@ public class AddEditActivity extends AppCompatActivity {
 
         }
     }
-
-/**
- * Callback interface to notify home activity about change in dataset.
- */
-public interface CustomChangeListener{
-    public void onReminderItemModified();
-}
 }

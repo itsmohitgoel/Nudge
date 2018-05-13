@@ -23,8 +23,9 @@ import com.example.mohgoel.nudge.data.NudgeDbHelper;
 
 import java.util.ArrayList;
 
-public class HomeActivity extends AppCompatActivity implements AddEditActivity.CustomChangeListener{
+public class HomeActivity extends AppCompatActivity {
     private RecyclerView mRecycleView;
+    private View mNoReminderView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     private ArrayList<ReminderItem> mRemindersDataList;
@@ -66,11 +67,22 @@ public class HomeActivity extends AppCompatActivity implements AddEditActivity.C
 
         mLayoutManager = new LinearLayoutManager(this);
         mRecycleView.setLayoutManager(mLayoutManager);
+
+        // initialize no-data view
+        mNoReminderView = findViewById(R.id.noReminders);
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         getRemindersData(); // Fetch Reminders data from local db
         if (mRemindersDataList != null && mRemindersDataList.size() > 0) {
             mAdapter = new RemindersAdapter(this, mRemindersDataList);
             mRecycleView.setAdapter(mAdapter);
+            showVisibleReminderView();
         } else {
+            showNoReminderView();
             Toast.makeText(this, "No data available yet", Toast.LENGTH_SHORT).show();
         }
     }
@@ -120,9 +132,13 @@ public class HomeActivity extends AppCompatActivity implements AddEditActivity.C
         }
     }
 
-    @Override
-    public void onReminderItemModified() {
-        getRemindersData();
-        mAdapter.notifyDataSetChanged();
+    private void showNoReminderView() {
+        mRecycleView.setVisibility(View.GONE);
+        mNoReminderView.setVisibility(View.VISIBLE);
+    }
+
+    private void showVisibleReminderView() {
+        mRecycleView.setVisibility(View.VISIBLE);
+        mNoReminderView.setVisibility(View.GONE);
     }
 }

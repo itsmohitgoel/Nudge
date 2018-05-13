@@ -7,4 +7,6 @@
     <string name="reminder_desc_hint">Enter description of reminder</string>
     <string name="set_reminder">Set Reminder</string>
     <string name="fileprovider_authority">com.example.mohgoel.nudge.fileprovider</string>
+    <string name="no_reminder_text">You have no Reminders</string>
+    <string name="add_new_task_text">Use + button to add new Reminder Task</string>
 </resources>
