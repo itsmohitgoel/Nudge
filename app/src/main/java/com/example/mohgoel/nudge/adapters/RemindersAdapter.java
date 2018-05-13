@@ -17,6 +17,7 @@ import com.example.mohgoel.nudge.utils.Utility;
 import java.util.ArrayList;
 
 /**
+ * Adapter for RecyclerView of Home Screen
  * Created by MOHGOEL on 13-May-18.
  */
 
@@ -45,6 +46,10 @@ public class RemindersAdapter extends RecyclerView.Adapter<RemindersAdapter.View
     @Override
     public void onBindViewHolder(RemindersAdapter.ViewHolder holder, final int position) {
         holder.tvReminderName.setText(mDataList.get(position).getName());
+
+        // In each row item , by default we show creation time of task, along with white background
+        // color, although, if task has reminder on it, then , row's background color will be
+        // changed to light green, and date of reminder will be shown insetead of creration date of task.
         if (Long.parseLong(mDataList.get(position).getRemindOn()) > 0) {
             holder.tvReminderTime.setText(Utility.getFriedlyDate(mContext, mDataList.get(position).getRemindOn()));
             holder.row.setBackgroundColor(mContext.getResources().getColor(R.color.foam));

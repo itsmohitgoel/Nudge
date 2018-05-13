@@ -33,7 +33,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID);
         builder.setContentIntent(pIntent)
-                .setSmallIcon(R.drawable.ic_no_reminder)
+                .setSmallIcon(R.drawable.ic_notification)
                 .setTicker(context.getString(R.string.notification_ticker))
                 .setContentTitle(context.getString(R.string.notification_ticker))
                 .setAutoCancel(true)

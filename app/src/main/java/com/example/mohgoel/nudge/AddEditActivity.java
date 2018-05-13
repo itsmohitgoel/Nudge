@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.FileProvider;
@@ -46,17 +45,20 @@ import java.util.Date;
 public class AddEditActivity extends AppCompatActivity {
     public static final String LOG_TAG = AddEditActivity.class.getSimpleName();
 
-    public static final int ALARM_REQUEST_CODE = 1;
+    public final int ALARM_REQUEST_CODE = 1;
+    static final int REQUEST_IMAGE_CAPTURE = 1;
     private EditText mViewReminderName;
     private EditText mViewReminderDescription;
     private TextView mCurrentReminder;
     private FloatingActionButton mBtnSaveReminder;
     private LinearLayout mImagesContainer;
-    static final int REQUEST_IMAGE_CAPTURE = 1;
+    private Button mBtnSetAlarm;
+
     static final int IMAGES_LOADER = 0;
     private String mCurrentPhotoPath = "";
     private String mCurrentImageName = "";
-    private Button mBtnSetAlarm;
+
+    // date-time pickers along with reminder's epoch time value(if any)
     private TimePickerDialog timePickerDialog;
     private DatePickerDialog datePickerDialog;
     private int mYear, mMonth, mDay, mHour, mMinute;
@@ -65,7 +67,7 @@ public class AddEditActivity extends AppCompatActivity {
     public static final String REMINDER_PARCELABLE = "reminder";
     private ReminderItem mReminderItem;
     private boolean isEditMode;
-    private ArrayList<ContentValues> imagesList = new ArrayList<>();
+    private ArrayList<ContentValues> mImageUrlsList = new ArrayList<>();
 
     //specify the columns for Images and define respecitive Projections
     private static final String[] IMAGE_COLUMNS = {
@@ -74,6 +76,8 @@ public class AddEditActivity extends AppCompatActivity {
             ImageEntry.COLUMN_IMAGE_NAME,
             ImageEntry.COLUMN_IMAGE_URL,
     };
+
+    // Below indices for columns must be in exact order define above.
     private static final int COL_IMAGE_ID = 0;
     private static final int COL_IMAGE_REMINDER_ID = 1;
     private static final int COL_IMAGE_NAME = 2;
@@ -98,15 +102,19 @@ public class AddEditActivity extends AppCompatActivity {
         mBtnSaveReminder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // empty title validation
                 if (mViewReminderName.getText().toString().trim().equals("")) {
                     Toast.makeText(AddEditActivity.this, R.string.error_msg_no_title, Toast.LENGTH_LONG).show();
                     return;
                 }
+
+                // Read name, description of task from fields
                 ContentValues cValues = new ContentValues();
                 cValues.put(ReminderEntry.COLUMN_NAME, mViewReminderName.getText().toString().trim());
                 cValues.put(ReminderEntry.COLUMN_DESCRIPTION, mViewReminderDescription.getText().toString().trim());
 
                 if (!isEditMode) {
+                    // If New Task , then insert blindly new record with no reminder value set
                     cValues.put(ReminderEntry.COLUMN_CREATED_ON, (System.currentTimeMillis() / 1000));
                     Uri reminderUri = getContentResolver().insert(ReminderEntry.CONTENT_URI, cValues);
                     long reminderRowID = ContentUris.parseId(reminderUri);
@@ -119,7 +127,7 @@ public class AddEditActivity extends AppCompatActivity {
                     }
                 } else {
                     //update the existing record
-                    if (mAlarmDateTime != null) { //update alarm time if set, in DB
+                    if (mAlarmDateTime != null) { //update alarm or reminder time if set, in DB
                         cValues.put(ReminderEntry.COLUMN_REMIND_ON, (mAlarmDateTime.getTimeInMillis() / 1000));
                         setAlarm(mAlarmDateTime);
                     }
@@ -135,17 +143,18 @@ public class AddEditActivity extends AppCompatActivity {
                 finish();
             }
 
+            // Helper method to insert image urls(if any), in image table
             private int insertImages(long reminderRowID) {
                 //add all images details to database via bulkInsert call
                 int insertCount = 0;
-                if (imagesList.size() > 0) {
+                if (mImageUrlsList.size() > 0) {
                     // append rowid of reminder as foreign key value
-                    for (ContentValues values : imagesList) {
+                    for (ContentValues values : mImageUrlsList) {
                         values.put(ImageEntry.COLUMN_REMINDER_ID, reminderRowID);
                     }
 
-                    ContentValues[] cvArray = new ContentValues[imagesList.size()];
-                    imagesList.toArray(cvArray);
+                    ContentValues[] cvArray = new ContentValues[mImageUrlsList.size()];
+                    mImageUrlsList.toArray(cvArray);
                     insertCount = getContentResolver().bulkInsert(ImageEntry.CONTENT_URI, cvArray);
                 }
                 return insertCount;
@@ -156,8 +165,6 @@ public class AddEditActivity extends AppCompatActivity {
         btnCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-
                 Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 // Ensure that there's a camera activity to handle the intent
                 if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
@@ -195,7 +202,7 @@ public class AddEditActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        if (mReminderItem != null) {
+        if (mReminderItem != null) { // set editMode value before resuming activity
             isEditMode = true;
         }
         // Display relevant data ,if reminder is being edited
@@ -230,6 +237,8 @@ public class AddEditActivity extends AppCompatActivity {
         super.onResume();
         if (isEditMode) {
             mBtnSetAlarm.setEnabled(true);
+
+            // If task has reminder on it, then display full date with time in Detail View of task.
             if (Long.parseLong(mReminderItem.getRemindOn()) > 0) {
                 mCurrentReminder.setText("Remind On: " + Utility.getSimpleDateWithTime(mReminderItem.getRemindOn()));
                 mCurrentReminder.setVisibility(View.VISIBLE);
@@ -256,7 +265,7 @@ public class AddEditActivity extends AppCompatActivity {
             cv.put(ImageEntry.COLUMN_IMAGE_URL, mCurrentPhotoPath);
             cv.put(ImageEntry.COLUMN_IMAGE_NAME, mCurrentImageName);
             cv.put(ImageEntry.COLUMN_REMINDER_ID, 1);
-            imagesList.add(cv);
+            mImageUrlsList.add(cv);
         }
     }
 
@@ -285,6 +294,11 @@ public class AddEditActivity extends AppCompatActivity {
         return image;
     }
 
+    /**
+     * Inner Class of loader callbacks, for interaction with LoaderManager.
+     * This will take care of asynchronously loading all the associated images with
+     * reminder, with help of Picasso Library
+     */
     private class ImageLoaderCallbacks implements LoaderManager.LoaderCallbacks<Cursor> {
 
         @Override

@@ -9,6 +9,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
+ * This class Provide various utility methods for conversion of date-time format to string
+ * or vice-versa.
  * Created by MOHGOEL on 13-May-18.
  */
 
