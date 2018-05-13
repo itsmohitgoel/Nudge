@@ -37,7 +37,11 @@ public class NudgeDbHelper extends SQLiteOpenHelper {
                 // the ID of the location entry associated with this weather data
                 ImageEntry.COLUMN_REMINDER_ID + " INTEGER NOT NULL, " +
                 ImageEntry.COLUMN_IMAGE_NAME + " TEXT NOT NULL, " +
-                ImageEntry.COLUMN_IMAGE_URL + " TEXT NOT NULL); ";
+                ImageEntry.COLUMN_IMAGE_URL + " TEXT NOT NULL, " +
+                // Set up the reminder_id column as foreign key to reminder table
+                " FOREIGN KEY (" + ImageEntry.COLUMN_REMINDER_ID + ") REFERENCES " +
+                ReminderEntry.TABLE_NAME + " (" + ReminderEntry._ID + ") " +
+                " ); ";
 
         db.execSQL(SQL_CREATE_IMAGE_TABLE);
     }
