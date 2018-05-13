@@ -45,7 +45,12 @@ public class RemindersAdapter extends RecyclerView.Adapter<RemindersAdapter.View
     @Override
     public void onBindViewHolder(RemindersAdapter.ViewHolder holder, final int position) {
         holder.tvReminderName.setText(mDataList.get(position).getName());
-        holder.tvReminderTime.setText(Utility.getFriedlyDate(mDataList.get(position).getCreatedOn()));
+        if (Long.parseLong(mDataList.get(position).getRemindOn()) > 0) {
+            holder.tvReminderTime.setText(Utility.getFriedlyDate(mContext, mDataList.get(position).getRemindOn()));
+            holder.row.setBackgroundColor(mContext.getResources().getColor(R.color.foam));
+        }else {
+            holder.tvReminderTime.setText(Utility.getFriedlyDate(mContext, mDataList.get(position).getCreatedOn()));
+        }
         holder.row.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

@@ -34,6 +34,7 @@ import android.widget.Toast;
 
 import com.example.mohgoel.nudge.beans.ReminderItem;
 import com.example.mohgoel.nudge.data.NudgeContract.*;
+import com.example.mohgoel.nudge.utils.Utility;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -48,6 +49,7 @@ public class AddEditActivity extends AppCompatActivity {
     public static final int ALARM_REQUEST_CODE = 1;
     private EditText mViewReminderName;
     private EditText mViewReminderDescription;
+    private TextView mCurrentReminder;
     private FloatingActionButton mBtnSaveReminder;
     private LinearLayout mImagesContainer;
     static final int REQUEST_IMAGE_CAPTURE = 1;
@@ -58,6 +60,7 @@ public class AddEditActivity extends AppCompatActivity {
     private TimePickerDialog timePickerDialog;
     private DatePickerDialog datePickerDialog;
     private int mYear, mMonth, mDay, mHour, mMinute;
+    private Calendar mAlarmDateTime;
 
     public static final String REMINDER_PARCELABLE = "reminder";
     private ReminderItem mReminderItem;
@@ -83,22 +86,28 @@ public class AddEditActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        mReminderItem = getIntent().getParcelableExtra(REMINDER_PARCELABLE);
+        if (getIntent() != null && getIntent().hasExtra(REMINDER_PARCELABLE)) {
+            mReminderItem = getIntent().getParcelableExtra(REMINDER_PARCELABLE);
+        }
         mViewReminderName = (EditText) findViewById(R.id.add_reminder_name);
         mViewReminderDescription = (EditText) findViewById(R.id.add_reminder_desc);
         mImagesContainer = (LinearLayout) findViewById(R.id.images_container);
+        mCurrentReminder = (TextView) findViewById(R.id.tv_current_reminder);
 
         mBtnSaveReminder = (FloatingActionButton) findViewById(R.id.btn_save_reminder);
         mBtnSaveReminder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (mViewReminderName.getText().toString().trim().equals("")) {
+                    Toast.makeText(AddEditActivity.this, R.string.error_msg_no_title, Toast.LENGTH_LONG).show();
+                    return;
+                }
                 ContentValues cValues = new ContentValues();
                 cValues.put(ReminderEntry.COLUMN_NAME, mViewReminderName.getText().toString().trim());
                 cValues.put(ReminderEntry.COLUMN_DESCRIPTION, mViewReminderDescription.getText().toString().trim());
-                cValues.put(ReminderEntry.COLUMN_CREATED_ON, System.currentTimeMillis());
 
                 if (!isEditMode) {
-
+                    cValues.put(ReminderEntry.COLUMN_CREATED_ON, (System.currentTimeMillis() / 1000));
                     Uri reminderUri = getContentResolver().insert(ReminderEntry.CONTENT_URI, cValues);
                     long reminderRowID = ContentUris.parseId(reminderUri);
                     int insertCount = insertImages(reminderRowID);
@@ -110,7 +119,10 @@ public class AddEditActivity extends AppCompatActivity {
                     }
                 } else {
                     //update the existing record
-
+                    if (mAlarmDateTime != null) { //update alarm time if set, in DB
+                        cValues.put(ReminderEntry.COLUMN_REMIND_ON, (mAlarmDateTime.getTimeInMillis() / 1000));
+                        setAlarm(mAlarmDateTime);
+                    }
                     int updateCount = 0;
                     updateCount = getContentResolver().update(ReminderEntry.CONTENT_URI,
                             cValues,
@@ -190,6 +202,9 @@ public class AddEditActivity extends AppCompatActivity {
         if (isEditMode) {
             mViewReminderName.setText(mReminderItem.getName());
             mViewReminderDescription.setText(mReminderItem.getDescription());
+            if (mAlarmDateTime != null) {
+                mAlarmDateTime.setTimeInMillis(Long.parseLong(mReminderItem.getRemindOn()) * 1000);
+            }
             mBtnSaveReminder.setImageResource(R.drawable.ic_pen);
 
             ImageLoaderCallbacks imageLoaderCallback = new ImageLoaderCallbacks();
@@ -197,22 +212,42 @@ public class AddEditActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * While leaving the activity, we'll always unset the edit mode, as activity
+     * can be restarted from stopped state , with New Task Mode.
+     */
     @Override
     protected void onStop() {
         super.onStop();
         isEditMode = false;
     }
 
+    /**
+     * Enable set Reminder button only in Edit mode of task.
+     */
     @Override
     protected void onResume() {
         super.onResume();
         if (isEditMode) {
             mBtnSetAlarm.setEnabled(true);
+            if (Long.parseLong(mReminderItem.getRemindOn()) > 0) {
+                mCurrentReminder.setText("Remind On: " + Utility.getSimpleDateWithTime(mReminderItem.getRemindOn()));
+                mCurrentReminder.setVisibility(View.VISIBLE);
+            }
         } else {
             mBtnSetAlarm.setEnabled(false);
         }
     }
 
+    /**
+     * If image is clicked and stored from camera app.
+     * then maintain a list of URIs of all images clicked yet.
+     * While saving we'll insert these uri's in our local DB.
+     *
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
@@ -225,6 +260,14 @@ public class AddEditActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Helper method to create File instance depicting DIR location
+     * in internal storage, where Camera App will store our
+     * clicked image and update the relevant URI.
+     *
+     * @return File instance of storage directory.
+     * @throws IOException
+     */
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -261,6 +304,8 @@ public class AddEditActivity extends AppCompatActivity {
             return cLoader;
         }
 
+        // Asynchronously load images if any, for the current task.
+        // and update the UI.
         @Override
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
             if (data.getCount() == 0) {
@@ -285,12 +330,16 @@ public class AddEditActivity extends AppCompatActivity {
             }
         }
 
+        // Ignore reset as we are not implementing cursor adapter.
         @Override
         public void onLoaderReset(Loader<Cursor> loader) {
 
         }
     }
 
+    /**
+     * Helper method to open Date Picker Dialog
+     */
     private void openDatePickerDialog() {
         Calendar calendar = Calendar.getInstance();
 
@@ -303,6 +352,9 @@ public class AddEditActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * DatesetListener to receiver date input from user via dialog box
+     */
     DatePickerDialog.OnDateSetListener onDateSetListener = new DatePickerDialog.OnDateSetListener() {
         @Override
         public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
@@ -314,6 +366,12 @@ public class AddEditActivity extends AppCompatActivity {
         }
     };
 
+    /**
+     * Helper method to open time picker dialog, immediately after user selected
+     * the date for reminder
+     *
+     * @param is24r whether the date is given in 24Hh format or 12Hr format
+     */
     private void openTimePickerDialog(boolean is24r) {
         Calendar calendar = Calendar.getInstance();
 
@@ -326,6 +384,10 @@ public class AddEditActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Anonymous implementation of TimeSetListener to receive reminder time of particular date,
+     * to be set on current Reminder task.
+     */
     TimePickerDialog.OnTimeSetListener onTimeSetListener = new TimePickerDialog.OnTimeSetListener() {
 
         @Override
@@ -355,6 +417,14 @@ public class AddEditActivity extends AppCompatActivity {
     };
 
 
+    /**
+     * registers the selected date-time reminder value with the Android's AlarmManager
+     * as soon as user edit and save the existing task.
+     * NOTE: The reminder can't be set until user has created the task.
+     * so this option is enabled only in edit mode.
+     *
+     * @param targetCal date-time value of reminder
+     */
     private void setAlarm(Calendar targetCal) {
         Intent alarmIntent = new Intent(getBaseContext(), AlarmReceiver.class);
         alarmIntent.putExtra(AlarmReceiver.TASK_NAME, mReminderItem.getName());

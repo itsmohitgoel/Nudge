@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import com.example.mohgoel.nudge.adapters.RemindersAdapter;
 import com.example.mohgoel.nudge.beans.ReminderItem;
+import com.example.mohgoel.nudge.data.NudgeContract;
 import com.example.mohgoel.nudge.data.NudgeContract.*;
 import com.example.mohgoel.nudge.data.NudgeDbHelper;
 
@@ -103,7 +104,8 @@ public class HomeActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_clear_all) {
+            removeAllTasks();
             return true;
         }
 
@@ -141,5 +143,17 @@ public class HomeActivity extends AppCompatActivity {
     private void showVisibleReminderView() {
         mRecycleView.setVisibility(View.VISIBLE);
         mNoReminderView.setVisibility(View.GONE);
+    }
+
+    private void removeAllTasks() {
+        int delCount = getContentResolver().delete(NudgeContract.ImageEntry.CONTENT_URI, null, null);
+        delCount = getContentResolver().delete(ReminderEntry.CONTENT_URI, null, null);
+
+        if (delCount > 0) {
+            Toast.makeText(this, delCount + " reminders deleted.", Toast.LENGTH_SHORT).show();
+            Intent intent = getIntent();
+            finish();
+            startActivity(intent);
+        }
     }
 }
