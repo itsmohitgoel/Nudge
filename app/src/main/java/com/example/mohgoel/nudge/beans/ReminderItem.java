@@ -15,23 +15,32 @@ public class ReminderItem implements Parcelable {
     private String id;
     private String name;
     private String description;
-    private final String createdOn;
+    private String createdOn;
     private String remindOn;
     private ArrayList<String> reminderImages;
 
-    public ReminderItem(String name, String description, String createdOn) {
-        this.name = name;
-        this.description = description;
+    public ReminderItem() {
+    }
+
+
+    public String getId() { return id; }
+
+    public void setId(String id) { this.id = id; }
+
+    public String getName() { return name; }
+
+    public void setName(String name) { this.name = name; }
+
+    public String getDescription() { return description; }
+
+    public void setDescription(String description) { this.description = description; }
+
+    public String getCreatedOn() {
+        return createdOn;
+    }
+
+    public void setCreatedOn(String createdOn) {
         this.createdOn = createdOn;
-    }
-
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public ArrayList<String> getReminderImages() {

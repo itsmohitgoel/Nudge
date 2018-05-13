@@ -20,7 +20,7 @@
         android:padding="5dp">
 
         <TextView
-            android:id="@+id/textview_start_time"
+            android:id="@+id/reminder_name_textview"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="4"
@@ -28,7 +28,7 @@
             tools:text="Task 1" />
 
         <TextView
-            android:id="@+id/textview_end_time"
+            android:id="@+id/reminder_time_textview"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="10dp"
