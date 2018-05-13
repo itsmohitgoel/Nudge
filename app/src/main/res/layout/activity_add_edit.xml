@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.mohgoel.nudge.HomeActivity">
+    tools:context="com.example.mohgoel.nudge.AddEditActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -20,14 +20,14 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_home" />
+    <include layout="@layout/content_add_edit" />
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/btn_add_reminder"
+        android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@drawable/ic_plus" />
+        app:srcCompat="@drawable/ic_content_save" />
 
 </android.support.design.widget.CoordinatorLayout>
