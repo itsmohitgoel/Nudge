@@ -6,4 +6,5 @@
     <string name="reminder_name_hint">Reminder Name</string>
     <string name="reminder_desc_hint">Enter description of reminder</string>
     <string name="set_reminder">Set Reminder</string>
+    <string name="fileprovider_authority">com.example.mohgoel.nudge.fileprovider</string>
 </resources>

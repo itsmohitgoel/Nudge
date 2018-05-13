@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.mohgoel.nudge">
 
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="27" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -23,11 +27,27 @@
         <activity
             android:name=".AddEditActivity"
             android:label="@string/title_activity_add_edit"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:parentActivityName=".HomeActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.mohgoel.nudge.HomeActivity" />
+        </activity>
 
         <provider
             android:name="com.example.mohgoel.nudge.data.NudgeProvider"
             android:authorities="com.example.mohgoel.nudge.app" />
+
+        <!-- FileProvider-->
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.example.mohgoel.nudge.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"></meta-data>
+        </provider>
     </application>
 
 </manifest>
