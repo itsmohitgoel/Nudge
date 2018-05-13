@@ -62,6 +62,7 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
+        // Set up recyclerview along with adapter and layout manager
         mRecycleView = (RecyclerView) findViewById(R.id.reminders_recycler_view);
         mRecycleView.setHasFixedSize(true);
 
