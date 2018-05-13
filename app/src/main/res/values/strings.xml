@@ -9,4 +9,5 @@
     <string name="fileprovider_authority">com.example.mohgoel.nudge.fileprovider</string>
     <string name="no_reminder_text">You have no Reminders</string>
     <string name="add_new_task_text">Use + button to add new Reminder Task</string>
+    <string name="notification_ticker">Reminder Activated !</string>
 </resources>
