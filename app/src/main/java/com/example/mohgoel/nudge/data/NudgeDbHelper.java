@@ -27,7 +27,10 @@ public class NudgeDbHelper extends SQLiteOpenHelper {
                 ReminderEntry.COLUMN_NAME + " TEXT NOT NULL, " +
                 ReminderEntry.COLUMN_DESCRIPTION + " TEXT , " +
                 ReminderEntry.COLUMN_CREATED_ON + " INTEGER DEFAULT 0, " +
-                ReminderEntry.COLUMN_REMIND_ON + " INTEGER DEFAULT 0); ";
+                ReminderEntry.COLUMN_REMIND_ON + " INTEGER DEFAULT 0, " +
+                " UNIQUE (" + ReminderEntry.COLUMN_NAME + ", " +
+                ReminderEntry.COLUMN_DESCRIPTION + ") ON CONFLICT IGNORE" +
+                " ); ";
 
         db.execSQL(SQL_CREATE_REMINDER_TABLE);
 
@@ -40,7 +43,9 @@ public class NudgeDbHelper extends SQLiteOpenHelper {
                 ImageEntry.COLUMN_IMAGE_URL + " TEXT NOT NULL, " +
                 // Set up the reminder_id column as foreign key to reminder table
                 " FOREIGN KEY (" + ImageEntry.COLUMN_REMINDER_ID + ") REFERENCES " +
-                ReminderEntry.TABLE_NAME + " (" + ReminderEntry._ID + ") " +
+                ReminderEntry.TABLE_NAME + " (" + ReminderEntry._ID + "), " +
+                " UNIQUE (" + ImageEntry.COLUMN_IMAGE_NAME + ", " +
+                ImageEntry.COLUMN_IMAGE_URL + ") ON CONFLICT IGNORE" +
                 " ); ";
 
         db.execSQL(SQL_CREATE_IMAGE_TABLE);

@@ -23,7 +23,7 @@ import com.example.mohgoel.nudge.data.NudgeDbHelper;
 
 import java.util.ArrayList;
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends AppCompatActivity implements AddEditActivity.CustomChangeListener{
     private RecyclerView mRecycleView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
@@ -34,14 +34,16 @@ public class HomeActivity extends AppCompatActivity {
     private static final String[] REMINDER_COLUMNS = {
             ReminderEntry.TABLE_NAME + "." + ReminderEntry._ID,
             ReminderEntry.COLUMN_NAME,
+            ReminderEntry.COLUMN_DESCRIPTION,
             ReminderEntry.COLUMN_CREATED_ON,
             ReminderEntry.COLUMN_REMIND_ON
     };
 
     public static final int COL_REM_ID = 0;
     public static final int COL_REM_NAME = 1;
-    public static final int COL_REM_CREATED_ON = 2;
-    public static final int COL_REM_REMIND_ON = 3;
+    public static final int COL_REM_DESCRIPTION = 2;
+    public static final int COL_REM_CREATED_ON = 3;
+    public static final int COL_REM_REMIND_ON = 4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,11 +111,18 @@ public class HomeActivity extends AppCompatActivity {
                 ReminderItem item = new ReminderItem();
                 item.setId(c.getString(COL_REM_ID));
                 item.setName(c.getString(COL_REM_NAME));
+                item.setDescription(c.getString(COL_REM_DESCRIPTION));
                 item.setCreatedOn(c.getString(COL_REM_CREATED_ON));
                 item.setRemindOn(c.getString(COL_REM_REMIND_ON));
 
                 mRemindersDataList.add(item);
             }
         }
+    }
+
+    @Override
+    public void onReminderItemModified() {
+        getRemindersData();
+        mAdapter.notifyDataSetChanged();
     }
 }

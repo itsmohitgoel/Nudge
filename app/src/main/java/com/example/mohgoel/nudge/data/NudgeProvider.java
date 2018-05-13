@@ -115,7 +115,7 @@ public class NudgeProvider extends ContentProvider {
             case IMAGE_WITH_REMINDER_ID:
                 long reminderID = ImageEntry.getReminderIdFromImageUri(uri);
                 String imageSelection = ImageEntry.TABLE_NAME + "." + ImageEntry.COLUMN_REMINDER_ID + " = ?";
-                cursor = mReminderAndImageQueryBuilder.query(db,
+                cursor = db.query(ImageEntry.TABLE_NAME,
                         projection,
                         imageSelection,
                         new String[]{Long.toString(reminderID)},
